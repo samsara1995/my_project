@@ -9,6 +9,9 @@ import torch.optim as optim
 import os
 import pickle
 import shutil
+from tqdm import *
+import time
+import utils
 
 
 
@@ -99,9 +102,9 @@ def main():
     global arg
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--batchsize', type=int, default=256)
+    parser.add_argument('--batchsize', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.01)
-    parser.add_argument('--numepoches', type=int, default=1)
+    parser.add_argument('--numepoches', type=int, default=20)
     parser.add_argument('--resume', default='', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
 
@@ -130,7 +133,7 @@ def main():
     for batch_datas, batch_labels in trainloader:
         num = num + 1
         print('train_size',batch_datas.size(), batch_labels.size())
-        if num > 10:
+        if num > 2:
             break
 
     testset = torchvision.datasets.MNIST(root='./data', train=False,
@@ -142,7 +145,7 @@ def main():
     for batch_datas, batch_labels in testloader:
         num = num + 1
         print('test_size',batch_datas.size(), batch_labels.size())
-        if num > 10:
+        if num > 2:
             break
     # Train the network
     model = MY_CNN(
@@ -206,9 +209,20 @@ class MY_CNN():
 
     def train(self):
 
-        for epoch in range(self.numepoches):
+        for self.epoch in range(self.numepoches):
+            print('==> Epoch:[{0}/{1}][training stage]'.format(self.epoch, self.numepoches))
+
+            batch_time = utils.AverageMeter()
+            data_time = utils.AverageMeter()
+            top1 = utils.AverageMeter()
+            top5 = utils.AverageMeter()
+            losses = utils.AverageMeter()
+
             running_loss = 0.0
-            for i, data in enumerate(self.trainloader, 0):
+            progress = tqdm(self.trainloader)
+            end = time.time()
+            for i, data in enumerate(progress, 0):
+                data_time.update(time.time() - end)
                 # get the inputs
                 inputs, labels = data
 
@@ -233,14 +247,29 @@ class MY_CNN():
                 # update weights
                 self.optimizer.step()
 
+                prec1, prec5 = utils.accuracy(outputs.data, labels, topk=(1, 5))
+                #print(data)
+                losses.update(loss.item(), len(data))
+                top1.update(prec1.item(), len(data))
+                top5.update(prec5.item(), len(data))
+
                 # print statistics
                 running_loss = running_loss + loss.data.item()
                 if i % 2000 == 1999:  # print every 2000 mini-batches
                     print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 2000))
+                          (self.epoch + 1, i + 1, running_loss / 2000))
                     running_loss = 0.0
 
-
+            info = {'Epoch': [self.epoch],
+                    'Batch Time': [round(batch_time.avg, 3)],
+                    'Data Time': [round(data_time.avg, 3)],
+                    'Loss': [round(losses.avg, 5)],
+                    'Prec@1': [round(top1.avg, 4)],
+                    'Prec@5': [round(top5.avg, 4)],
+                    'lr': self.optimizer.param_groups[0]['lr']
+                    }
+            utils.record_info(info, 'record/opf_train.csv',
+                        'train')
             # prec1, val_loss = self.validate_1epoch()  # 验证
             # print(prec1)
             is_best = running_loss > self.best_prec1
