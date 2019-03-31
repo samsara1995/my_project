@@ -23,7 +23,7 @@ def read_image(filename):
                  index += struct.calcsize('>B')
 
         print ('save ' + str(i) + 'image')
-        image.save('/nfs/syzhou/github/project/dataset/MNIST_data/test/' + str(i) + '.png')
+        image.save('/nfs/syzhou/github/project/dataset/MNIST_data/row/' + str(i) + '.png')
 
 
 def read_label(filename, saveFilename):
@@ -48,5 +48,11 @@ def read_label(filename, saveFilename):
 
 
 if __name__ == '__main__':
+     #ceshi集 test
      #read_image('/nfs/syzhou/github/project/dataset/MNIST_data/t10k-images-idx3-ubyte')
-     read_label('/nfs/syzhou/github/project/dataset/MNIST_data/t10k-labels-idx1-ubyte', '/nfs/syzhou/github/project/dataset/MNIST_data/label.txt')
+     #read_label('/nfs/syzhou/github/project/dataset/MNIST_data/t10k-labels-idx1-ubyte', '/nfs/syzhou/github/project/dataset/MNIST_data/label.txt')
+
+    #xunlian集 raw
+     read_image('/nfs/syzhou/github/project/dataset/MNIST_data/train-images-idx3-ubyte')
+     read_label('/nfs/syzhou/github/project/dataset/MNIST_data/train-labels-idx1-ubyte',
+           '/nfs/syzhou/github/project/dataset/MNIST_data/trainlabel.txt')
