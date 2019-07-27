@@ -1,5 +1,5 @@
 # my_project
-这是我的一门课的课设：（建立自己的通用pytorch tensorflow框架）
+（建立自己的通用pytorch tensorflow框架，写给自己看，方便使用～）
 
 1；knn做手写数字识别
 
